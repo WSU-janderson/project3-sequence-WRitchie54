@@ -9,7 +9,7 @@ Sequence::Sequence(size_t sz) {
         SequenceNode* newNode = new SequenceNode();
         first = newNode;
         last = newNode;
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < sz-1; i++) {
             newNode->next = new SequenceNode();
             newNode->next->prev = newNode;
             newNode = newNode->next;
@@ -18,6 +18,11 @@ Sequence::Sequence(size_t sz) {
             last = newNode;
         }
         count = sz;
+    }
+    else {
+        count = 0;
+        first = nullptr;
+        last = nullptr;
     }
 
 }
@@ -28,28 +33,27 @@ Sequence::Sequence(const Sequence& s) {
 // Destroys all items in the sequence and release the memory
 // associated with the sequence
 Sequence::~Sequence() {
-    SequenceNode* curNode = first;
-    while (curNode->next != nullptr) {
-        SequenceNode* newNode = curNode->next;
-        delete curNode;
-        curNode = newNode;
+    if (first != nullptr) {
+        SequenceNode* curNode = first;
+        while (curNode->next != nullptr) {
+            SequenceNode* newNode = curNode->next;
+            delete curNode;
+            curNode = newNode;
+        }
     }
 }
 // The current sequence is released and replaced by a (deep) copy of sequence
 // s. A reference to the copied sequence is returned (return *this;).
 Sequence& Sequence::operator=(const Sequence& s) {
-    //delete old list//////////////////////////////////////////////////////////////////////
+    delete this;
 
-    SequenceNode* oldListNode = new SequenceNode();
+    SequenceNode* oldListNode = s.first;
     SequenceNode* newListNode = new SequenceNode();
 
-    first->item = s.first->item;
-    first->next = newListNode;
-    oldListNode = s.first->next;
     newListNode->item = oldListNode->item;
-    newListNode->prev = first;
+    first = newListNode;
 
-    for (int i = 0; i < s.count-1; i++) {
+    while (oldListNode->next != nullptr) {
         //Move through old list one step
         oldListNode = oldListNode->next;
 
@@ -88,12 +92,13 @@ std::string& Sequence::operator[](size_t position) {
 // The value of item is append to the sequence.
 void Sequence::push_back(std::string item) {
     SequenceNode* newNode = new SequenceNode();
+    last->next = newNode;
     newNode->next = nullptr;
     newNode->prev = last;
     newNode->item = item;
-    last->next = newNode;
+
     last = newNode;
-    this->count = this->count + 1;
+    count = count + 1;
 }
 // The item at the end of the sequence is deleted and size of the sequence is
 // reduced by one. If sequence was empty, throws an exception
@@ -147,7 +152,7 @@ void Sequence::clear() {
 // The item at position is removed from the sequence, and the memory
 // is released. If called with an invalid position throws an exception.
 void Sequence::erase(size_t position) {
-    if ((position < count) and (position > -1)) {
+    if ((position < count) and (position >= 0)) {
         int i = 0;
         SequenceNode* curNode = first;
         while (i < position) {
@@ -163,7 +168,7 @@ void Sequence::erase(size_t position) {
 // deleted and their memory released. If called with invalid position and/or
 // count throws an exception.
 void Sequence::erase(size_t position, size_t count) {
-    if (((position + count) < this->count) and (position > -1)) {
+    if (((position + count) < this->count) and (position >= 0)) {
         //Find first node that needs deleted
         int i = 0;
         SequenceNode* firstDeleteNode = first;
@@ -175,7 +180,7 @@ void Sequence::erase(size_t position, size_t count) {
         //Find last node that needs deleted
         i = 0;
         SequenceNode* lastDeleteNode = firstDeleteNode;
-        while (i < count) {
+        while (i < count-1) {
             lastDeleteNode = lastDeleteNode->next;
             i++;
         }
@@ -202,10 +207,11 @@ std::ostream& operator<<(std::ostream& os, const Sequence& s){
     while (curNode->next != nullptr) {
         list = list + curNode->item;
         curNode = curNode->next;
-        if (curNode->next != nullptr) {
+        if (curNode != nullptr) {
             list = list + ", ";
         }
     }
+    list = list + curNode->item;
     list = list + ">";
 
     os << list;

@@ -211,8 +211,10 @@ int main() {
 	// ERASE
 	try {
 #ifdef __ERASE
+		OUTSTREAM << "Erase: " << endl;
 		Sequence data(6);
 		for (int i = 0; i < 6; i++) data[i] = make_value(i);
+		OUTSTREAM << "Sequence: " << data << endl;
 		data.erase(2, 2); // remove two elements
 		OUTSTREAM << "Sequence: " << data << endl;
 #endif
