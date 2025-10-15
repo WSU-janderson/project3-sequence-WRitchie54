@@ -7,18 +7,17 @@
 Sequence::Sequence(size_t sz) {
     if (sz > 0) {
         SequenceNode* newNode = new SequenceNode();
-        first.next = newNode;
-        newNode->next = nullptr;
-        newNode->prev = &first;
-        last = *newNode;
-        for (int i = 1; i < sz; i++) {
+        first = newNode;
+        last = newNode;
+        for (int i = 0; i < sz; i++) {
             newNode->next = new SequenceNode();
             newNode->next->prev = newNode;
             newNode = newNode->next;
 
             newNode->next = nullptr;
-            last = *newNode;
+            last = newNode;
         }
+        count = sz;
     }
 
 }
@@ -29,11 +28,9 @@ Sequence::Sequence(const Sequence& s) {
 // Destroys all items in the sequence and release the memory
 // associated with the sequence
 Sequence::~Sequence() {
-    SequenceNode* curNode = new SequenceNode();
-    curNode = &first;
-    for (int i = 0; i < count-1; i++) {
-        SequenceNode* newNode = new SequenceNode();
-        newNode = curNode->next;
+    SequenceNode* curNode = first;
+    while (curNode->next != nullptr) {
+        SequenceNode* newNode = curNode->next;
         delete curNode;
         curNode = newNode;
     }
@@ -41,16 +38,16 @@ Sequence::~Sequence() {
 // The current sequence is released and replaced by a (deep) copy of sequence
 // s. A reference to the copied sequence is returned (return *this;).
 Sequence& Sequence::operator=(const Sequence& s) {
-    delete this;
+    //delete old list//////////////////////////////////////////////////////////////////////
 
     SequenceNode* oldListNode = new SequenceNode();
     SequenceNode* newListNode = new SequenceNode();
 
-    first.item = s.first.item;
-    first.next = newListNode;
-    oldListNode = s.first.next;
+    first->item = s.first->item;
+    first->next = newListNode;
+    oldListNode = s.first->next;
     newListNode->item = oldListNode->item;
-    newListNode->prev = &first;
+    newListNode->prev = first;
 
     for (int i = 0; i < s.count-1; i++) {
         //Move through old list one step
@@ -64,10 +61,10 @@ Sequence& Sequence::operator=(const Sequence& s) {
         //Copy value of old list to new
         newListNode->item = oldListNode->item;
     }
-    last = *newListNode;
-    last.item = newListNode->item;
-    last.prev = newListNode->prev;
-    last.next = nullptr;
+    last = newListNode;
+    last->item = newListNode->item;
+    last->prev = newListNode->prev;
+    last->next = nullptr;
 
     return *this;
 }
@@ -78,7 +75,7 @@ Sequence& Sequence::operator=(const Sequence& s) {
 std::string& Sequence::operator[](size_t position) {
     if (position < count and position >= 0) {
         int i = 0;
-        SequenceNode* curNode = &first;
+        SequenceNode* curNode = first;
         while (i < position) {
             curNode = curNode->next;
             i++;
@@ -92,17 +89,17 @@ std::string& Sequence::operator[](size_t position) {
 void Sequence::push_back(std::string item) {
     SequenceNode* newNode = new SequenceNode();
     newNode->next = nullptr;
-    newNode->prev = &last;
+    newNode->prev = last;
     newNode->item = item;
-    last.next = newNode;
-    last = *newNode;
+    last->next = newNode;
+    last = newNode;
     this->count = this->count + 1;
 }
 // The item at the end of the sequence is deleted and size of the sequence is
 // reduced by one. If sequence was empty, throws an exception
 void Sequence::pop_back() {
-    last.prev->next = nullptr;
-    last = *last.prev;
+    last->prev->next = nullptr;
+    last = last->prev;
 }
 // The position satisfies ( position >= 0 && position <= last_index() ). The
 // value of item is inserted at position and the size of sequence is increased
@@ -111,7 +108,7 @@ void Sequence::pop_back() {
 void Sequence::insert(size_t position, std::string item) {
     if ((position > -1) and (position < this->count)) {
         SequenceNode* newNode = new SequenceNode();
-        newNode = &first;
+        newNode = first;
         for (int i = 0; i < position; i++) {
             newNode = newNode->next;
         }
@@ -121,16 +118,16 @@ void Sequence::insert(size_t position, std::string item) {
 // Returns the first element in the sequence. If the sequence is empty, throw an
 // exception.
 std::string Sequence::front() const {
-    return first.item;
+    return first->item;
 }
 // Return the last element in the sequence. If the sequence is empty, throw an
 // exception.
 std::string Sequence::back() const {
-    return last.item;
+    return last->item;
 }
 // Return true if the sequence has no elements, otherwise false.
 bool Sequence::empty() const {
-    if (first.next == nullptr && last.prev == nullptr) {
+    if (first->next == nullptr && last->prev == nullptr) {
         return true;
     }
     else {
@@ -146,14 +143,13 @@ size_t Sequence::size() const {
 // items re-inserted.
 void Sequence::clear() {
     delete this;
-    //Look if this is even right///////////////////////////////////////////////////////////////////////
 }
 // The item at position is removed from the sequence, and the memory
 // is released. If called with an invalid position throws an exception.
 void Sequence::erase(size_t position) {
     if ((position < count) and (position > -1)) {
         int i = 0;
-        SequenceNode* curNode = &first;
+        SequenceNode* curNode = first;
         while (i < position) {
             curNode = curNode->next;
             i++;
@@ -170,7 +166,7 @@ void Sequence::erase(size_t position, size_t count) {
     if (((position + count) < this->count) and (position > -1)) {
         //Find first node that needs deleted
         int i = 0;
-        SequenceNode* firstDeleteNode = &first;
+        SequenceNode* firstDeleteNode = first;
         while (i < position) {
             firstDeleteNode = firstDeleteNode->next;
             i++;
@@ -201,7 +197,7 @@ void Sequence::erase(size_t position, size_t count) {
 // friend function
 std::ostream& operator<<(std::ostream& os, const Sequence& s){
     std::string list;
-    const SequenceNode *curNode = &s.first;
+    const SequenceNode *curNode = s.first;
     list = "<";
     while (curNode->next != nullptr) {
         list = list + curNode->item;

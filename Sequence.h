@@ -19,7 +19,8 @@ public: // to make it easier, we can make the data members public so we don't ne
 
 class Sequence {
     private:
-        SequenceNode first, last;
+        SequenceNode* first;
+        SequenceNode* last;
         size_t count;
 
 
