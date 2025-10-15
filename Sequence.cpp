@@ -58,12 +58,14 @@ Sequence& Sequence::operator=(const Sequence& s) {
         //Copy value of old list to new
         newListNode->item = oldListNode->item;
     }
+
+    //setup last as the last copied over value
     last = newListNode;
     last->item = newListNode->item;
     last->prev = newListNode->prev;
     last->next = nullptr;
     count = s.count;
-    
+
     return *this;
 }
 // The position satisfies ( position >= 0 && position <= last_index() ).
@@ -71,6 +73,7 @@ Sequence& Sequence::operator=(const Sequence& s) {
 // sequence. Throws an exception if the position is outside the bounds
 // of the sequence
 std::string& Sequence::operator[](size_t position) {
+    //Make sure position is in range of number of elements
     if (position < count and position >= 0) {
         int i = 0;
         SequenceNode* curNode = first;
@@ -80,49 +83,104 @@ std::string& Sequence::operator[](size_t position) {
         }
         return curNode->item;
     }
-    throw std::out_of_range("Sequence::operator[]");
+    throw std::invalid_argument("Invalid position");
 }
 
 // The value of item is append to the sequence.
 void Sequence::push_back(std::string item) {
+    //Create new node to be last item
     SequenceNode* newNode = new SequenceNode();
-    last->next = newNode;
-    newNode->next = nullptr;
-    newNode->prev = last;
+    if (first == nullptr) {
+        first = newNode;
+    }
+    else {
+        last->next = newNode;
+        newNode->next = nullptr;
+        newNode->prev = last;
+    }
+
     newNode->item = item;
 
+    //Set last to be the new node and add to count
     last = newNode;
     count = count + 1;
 }
 // The item at the end of the sequence is deleted and size of the sequence is
 // reduced by one. If sequence was empty, throws an exception
 void Sequence::pop_back() {
-    last->prev->next = nullptr;
-    last = last->prev;
+    if (first != nullptr) {
+        SequenceNode* curLast = last;
+        if (first != last) {
+            last = last->prev;
+            last->next = nullptr;
+        }
+        else {
+            delete curLast;
+            curLast = first;
+            first = nullptr;
+            last = nullptr;
+        }
+
+        delete curLast;
+        count--;
+    }
+    else {
+        throw std::invalid_argument("Nothing in list");
+    }
+
 }
 // The position satisfies ( position >= 0 && position <= last_index() ). The
 // value of item is inserted at position and the size of sequence is increased
 // by one. Throws an exceptionif the position is outside the bounds of the
 // sequence
 void Sequence::insert(size_t position, std::string item) {
-    if ((position > -1) and (position < this->count)) {
+    //Make sure position is in element list
+    if ((position >= 0) and (position < this->count)) {
+        //Create new node
         SequenceNode* newNode = new SequenceNode();
-        newNode = first;
+        SequenceNode* curNode = first;
+
+        //Get to position in list where insert will happen
         for (int i = 0; i < position; i++) {
-            newNode = newNode->next;
+            curNode = curNode->next;
         }
+        //set the next nodes previous node to the new one
+        newNode->next = curNode;
+        newNode->prev = curNode->prev;
+
+        //Set next node to new node
+        if (curNode != first) {
+            curNode->prev->next = newNode;
+        }
+        else {
+            first = newNode;
+        }
+        curNode->prev = newNode;
+
+
         newNode->item = item;
+
+        count++;
+    }
+    else {
+        throw std::invalid_argument("Invalid position");
     }
 }
 // Returns the first element in the sequence. If the sequence is empty, throw an
 // exception.
 std::string Sequence::front() const {
-    return first->item;
+    if (first != nullptr) {
+        return first->item;
+    }
+    throw std::runtime_error("Empty sequence");
 }
 // Return the last element in the sequence. If the sequence is empty, throw an
 // exception.
 std::string Sequence::back() const {
-    return last->item;
+    if (first != nullptr) {
+        return last->item;
+    }
+    throw std::runtime_error("Empty sequence");
 }
 // Return true if the sequence has no elements, otherwise false.
 bool Sequence::empty() const {
@@ -167,6 +225,9 @@ void Sequence::erase(size_t position) {
         curNode->next->prev = curNode->prev;
         delete curNode;
     }
+    else {
+        throw std::invalid_argument("Invalid position");
+    }
 }
 // The items in the sequence at ( position ... (position + count - 1) ) are
 // deleted and their memory released. If called with invalid position and/or
@@ -200,14 +261,20 @@ void Sequence::erase(size_t position, size_t count) {
         }
         delete lastDeleteNode;
     }
+    else {
+        throw std::invalid_argument("Invalid position or count");
+    }
 }
 // Outputs all elements (ex: <4, 8, 15, 16, 23, 42>) as a string to the output
 // stream. This is *not* a method of the Sequence class, but instead it is a
 // friend function
 std::ostream& operator<<(std::ostream& os, const Sequence& s){
+    //Setup string to hold node info
     std::string list;
+    //start at first node
     const SequenceNode *curNode = s.first;
     list = "<";
+    //Until end of list add each item to string output
     while (curNode->next != nullptr) {
         list = list + curNode->item;
         curNode = curNode->next;
@@ -218,6 +285,7 @@ std::ostream& operator<<(std::ostream& os, const Sequence& s){
     list = list + curNode->item;
     list = list + ">";
 
+    //Return string to stream
     os << list;
     return os;
 }
