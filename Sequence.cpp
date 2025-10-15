@@ -1,18 +1,26 @@
 #include "Sequence.h"
 
+#include <stdexcept>
 #include <string>
 // Creates an empty sequence (numElts == 0) or a sequence of numElts items
 // indexed from 0 ... (numElts - 1).
 Sequence::Sequence(size_t sz) {
-    first = SequenceNode();
-    last = first;
-    for (int i = 0; i < sz; i++) {
+    if (sz > 0) {
         SequenceNode* newNode = new SequenceNode();
+        first.next = newNode;
         newNode->next = nullptr;
-        newNode->prev = &last;
-        last.next = newNode;
+        newNode->prev = &first;
         last = *newNode;
+        for (int i = 1; i < sz; i++) {
+            newNode->next = new SequenceNode();
+            newNode->next->prev = newNode;
+            newNode = newNode->next;
+
+            newNode->next = nullptr;
+            last = *newNode;
+        }
     }
+
 }
 // Creates a (deep) copy of sequence s
 Sequence::Sequence(const Sequence& s) {
@@ -68,7 +76,7 @@ Sequence& Sequence::operator=(const Sequence& s) {
 // sequence. Throws an exception if the position is outside the bounds
 // of the sequence
 std::string& Sequence::operator[](size_t position) {
-    if ((position < count) and (position > -1)) {
+    if (position < count and position >= 0) {
         int i = 0;
         SequenceNode* curNode = &first;
         while (i < position) {
@@ -77,7 +85,9 @@ std::string& Sequence::operator[](size_t position) {
         }
         return curNode->item;
     }
+    throw std::out_of_range("Sequence::operator[]");
 }
+
 // The value of item is append to the sequence.
 void Sequence::push_back(std::string item) {
     SequenceNode* newNode = new SequenceNode();
@@ -190,4 +200,18 @@ void Sequence::erase(size_t position, size_t count) {
 // stream. This is *not* a method of the Sequence class, but instead it is a
 // friend function
 std::ostream& operator<<(std::ostream& os, const Sequence& s){
+    std::string list;
+    const SequenceNode *curNode = &s.first;
+    list = "<";
+    while (curNode->next != nullptr) {
+        list = list + curNode->item;
+        curNode = curNode->next;
+        if (curNode->next != nullptr) {
+            list = list + ", ";
+        }
+    }
+    list = list + ">";
+
+    os << list;
+    return os;
 }
