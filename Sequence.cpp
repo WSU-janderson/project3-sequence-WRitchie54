@@ -41,6 +41,9 @@ Sequence::~Sequence() {
             curNode = newNode;
         }
     }
+    first = nullptr;
+    last = nullptr;
+    count = 0;
 }
 // The current sequence is released and replaced by a (deep) copy of sequence
 // s. A reference to the copied sequence is returned (return *this;).
