@@ -33,22 +33,12 @@ Sequence::Sequence(const Sequence& s) {
 // Destroys all items in the sequence and release the memory
 // associated with the sequence
 Sequence::~Sequence() {
-    if (first != nullptr) {
-        SequenceNode* curNode = first;
-        while (curNode->next != nullptr) {
-            SequenceNode* newNode = curNode->next;
-            delete curNode;
-            curNode = newNode;
-        }
-    }
-    first = nullptr;
-    last = nullptr;
-    count = 0;
+    this->clear();
 }
 // The current sequence is released and replaced by a (deep) copy of sequence
 // s. A reference to the copied sequence is returned (return *this;).
 Sequence& Sequence::operator=(const Sequence& s) {
-    delete this;
+    this->clear();
 
     SequenceNode* oldListNode = s.first;
     SequenceNode* newListNode = new SequenceNode();
@@ -72,7 +62,8 @@ Sequence& Sequence::operator=(const Sequence& s) {
     last->item = newListNode->item;
     last->prev = newListNode->prev;
     last->next = nullptr;
-
+    count = s.count;
+    
     return *this;
 }
 // The position satisfies ( position >= 0 && position <= last_index() ).
@@ -150,7 +141,17 @@ size_t Sequence::size() const {
 // sequence is released, resetting the sequence to an empty state that can have
 // items re-inserted.
 void Sequence::clear() {
-    delete this;
+    if (first != nullptr) {
+        SequenceNode* curNode = first;
+        while (curNode->next != nullptr) {
+            SequenceNode* newNode = curNode->next;
+            delete curNode;
+            curNode = newNode;
+        }
+    }
+    first = nullptr;
+    last = nullptr;
+    count = 0;
 }
 // The item at position is removed from the sequence, and the memory
 // is released. If called with an invalid position throws an exception.
