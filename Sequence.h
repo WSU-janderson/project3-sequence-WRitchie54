@@ -41,4 +41,30 @@ class Sequence {
         void erase(size_t position);
         void erase(size_t position, size_t count);
         friend std::ostream& operator<<(std::ostream& os, const Sequence& s);
+    /*
+     *  <<: returns all the elements in the list in string format to stream
+     *
+     * returns: ostream
+     */
+    friend std::ostream& operator<<(std::ostream& os, const Sequence& s){
+        //Setup string to hold node info
+        std::string list;
+        //start at first node
+        const SequenceNode *curNode = s.first;
+        list = "<";
+        //Until end of list add each item to string output
+        while (curNode->next != nullptr) {
+            list = list + curNode->item;
+            curNode = curNode->next;
+            if (curNode != nullptr) {
+                list = list + ", ";
+            }
+        }
+        list = list + curNode->item;
+        list = list + ">";
+
+        //Return string to stream
+        os << list;
+        return os;
+    }
 };
